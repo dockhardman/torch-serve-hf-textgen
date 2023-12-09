@@ -1,5 +1,4 @@
 MODEL_DIR := models/meta-llama/Llama-2-7b-chat-hf
-EXTRA_FILES := $(shell for f in $(MODEL_DIR)/*; do echo $$f,; done | sed 's/,$$/ /')
 
 
 archive_model:
@@ -8,8 +7,8 @@ archive_model:
 		--version 1.0 \
 		--serialized-file $(MODEL_DIR)/model.safetensors.index.json \
 		--export-path model_store \
-		--handler huggingface_transformers_handler.py \
-		--extra-files "$(EXTRA_FILES)"
+		--handler handlers/hf_text_generation_handler.py \
+		--extra-files models/meta-llama/Llama-2-7b-chat-hf/config.json,models/meta-llama/Llama-2-7b-chat-hf/generation_config.json,models/meta-llama/Llama-2-7b-chat-hf/model-00001-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model-00002-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model-00003-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model.safetensors.index.json,models/meta-llama/Llama-2-7b-chat-hf/special_tokens_map.json,models/meta-llama/Llama-2-7b-chat-hf/tokenizer.json,models/meta-llama/Llama-2-7b-chat-hf/tokenizer.model,models/meta-llama/Llama-2-7b-chat-hf/tokenizer_config.json
 
 start_torchserve:
 	torchserve --start \
