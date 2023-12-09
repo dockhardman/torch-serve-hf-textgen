@@ -11,18 +11,18 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class RequestCall(TypedDict):
-    body: Union["RequestBody", List["RequestBody"]]
-
-
-class RequestBody(TypedDict):
-    text: Text
-
-
 class TransformersHandler(BaseHandler):
     """
     Transformers handler class for text generation.
     """
+
+    class RequestCall(TypedDict):
+        body: Union[
+            "TransformersHandler.RequestBody", List["TransformersHandler.RequestBody"]
+        ]
+
+    class RequestBody(TypedDict):
+        text: Text
 
     def __init__(self):
         super(TransformersHandler, self).__init__()
