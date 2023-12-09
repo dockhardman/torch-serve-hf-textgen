@@ -1,8 +1,13 @@
+import logging
+
 import torch
 import transformers
 from transformers import AutoTokenizer
 from transformers.pipelines import TextGenerationPipeline
 from ts.torch_handler.base_handler import BaseHandler
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class TransformersHandler(BaseHandler):
@@ -38,17 +43,20 @@ class TransformersHandler(BaseHandler):
         """
         Preprocessing input request. This prepares the input text.
         """
+        print(f"Data: {data}")
         texts = [request.get("data") or request.get("body") for request in data]
         texts = [
             text.decode("utf-8") if isinstance(text, (bytes, bytearray)) else text
             for text in texts
         ]
+        print(f"Texts: {texts}")
         return texts
 
     def inference(self, inputs):
         """
         Generate text using the model pipeline.
         """
+        print(f"Inputs: {inputs}")
         outputs = self.pipeline(
             inputs,
             do_sample=True,
