@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "llama2-torch-serve"
+name = "torch-serve-hf-textgen"
 version = "0.1.0"
 description = ""
 authors = ["Allen Chou <allen.chou@aiello.ai>"]
