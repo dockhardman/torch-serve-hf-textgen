@@ -1,6 +1,5 @@
 MODEL_DIR := models/meta-llama/Llama-2-7b-chat-hf
 
-
 archive_model:
 	torch-model-archiver \
 		--model-name meta-llama--Llama-2-7b-chat-hf \
@@ -14,7 +13,8 @@ start_torchserve:
 	torchserve --start \
 		--ncs \
 		--model-store model_store \
-		--models meta-llama--Llama-2-7b-chat-hf=meta-llama--Llama-2-7b-chat-hf.mar
+		--models meta-llama--Llama-2-7b-chat-hf=meta-llama--Llama-2-7b-chat-hf.mar \
+		--ts-config config/config.properties
 
 stop_torchserve:
 	torchserve --stop
