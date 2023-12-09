@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "llama2-torch-serve"
+version = "0.1.0"
+description = ""
+authors = ["Allen Chou <allen.chou@aiello.ai>"]
+license = "Private"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+pytz = "*"
+rich = "*"
+huggingface-hub = {extras = ["cli", "torch"], version = "^0.19.4"}
+protobuf = "^4.25.1"
+python-dotenv = "^1.0.0"
+sentencepiece = "^0.1.99"
+torch-model-archiver = "^0.9.0"
+torch-workflow-archiver = "^0.2.11"
+torchserve = "^0.9.0"
+transformers = {extras = ["torch"], version = "^4.35.2"}
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
