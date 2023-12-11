@@ -12,14 +12,14 @@ This project demonstrates how to package and serve a Hugging Face transformer mo
 ## Setup
 
 1. **Install Dependencies**:
-   Ensure you have Python, PyTorch, Hugging Face's Transformers library, and TorchServe installed.
+   Install the dependencies through poetry: `poetry install`
 2. **Model Packaging**:
    Use the Makefile to package the model. Run: `make archive_model`
 3. **Start TorchServe**:
-   To start the TorchServe server with the packaged model, run:
-   ```bash
-   torchserve --start --ncs --model-store model_store --models meta-llama--Llama-2-7b-chat-hf=meta-llama--Llama-2-7b-chat-hf.mar
-   ```
+   To start the TorchServe server with the packaged model, run: `start_torchserve`
+
+4. **Stop TorchServe**:
+   To stop the TorchServe server, run: `stop_torchserve`
 
 ## Usage
 
