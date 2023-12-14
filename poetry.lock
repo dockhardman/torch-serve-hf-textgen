@@ -271,6 +271,17 @@ files = [
 ]
 
 [[package]]
+name = "einops"
+version = "0.7.0"
+description = "A new flavour of deep learning operations"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "einops-0.7.0-py3-none-any.whl", hash = "sha256:0f3096f26b914f465f6ff3c66f5478f9a5e380bb367ffc6493a68143fbbf1fd1"},
+    {file = "einops-0.7.0.tar.gz", hash = "sha256:b2b04ad6081a3b227080c9bf5e3ace7160357ff03043cd66cc5b2319eb7031d1"},
+]
+
+[[package]]
 name = "enum-compat"
 version = "0.0.3"
 description = "enum/enum34 compatibility package"
@@ -2000,4 +2011,4 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "35ea3848a3458dc3eaa953714826fd5aeff51b22dfe965d74c3d53d91b936868"
+content-hash = "428e09dad5bf3f8557916492f72c9ccdcbd8e650839f0dc409f0aac844d0b3e9"
