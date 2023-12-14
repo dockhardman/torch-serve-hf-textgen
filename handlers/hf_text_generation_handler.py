@@ -42,7 +42,7 @@ class TransformersHandler(BaseHandler):
             "text-generation",
             model=model_dir,
             torch_dtype=torch.float16,
-            device_map="auto",
+            device_map=self.device,
         )
         self.model = self.pipeline.model
 
@@ -88,9 +88,7 @@ class TransformersHandler(BaseHandler):
             repetition_penalty=1.2,
         )
         print(f"Results: {results}")
-        return [
-            "\n".join([res["generated_text"] for res in result]) for result in results
-        ]
+        return [result[0] for result in results]
 
     def postprocess(self, inference_output):
         """
