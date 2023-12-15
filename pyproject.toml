@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 pydantic = "^2"
+pyjson5 = "^1.6.0"
 pytz = "*"
 rich = "*"
 typing-extensions = "^4.7.0"
