@@ -19,6 +19,22 @@ start-torchserve:
 stop-torchserve:
 	torchserve --stop
 
+start-fastapi-dev:
+	uvicorn fastapi_app:app \
+		--host=0.0.0.0 \
+		--port=8087 \
+		--workers=2 \
+		--reload \
+		--log-level=debug \
+		--use-colors \
+		--reload-delay=5.0
+
+start-fastapi:
+	uvicorn fastapi_app:app \
+		--host=0.0.0.0 \
+		--port=80 \
+		--workers=2
+
 format-all:
 	isort .
 	black .
