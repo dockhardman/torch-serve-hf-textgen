@@ -8,20 +8,49 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
+pydantic = "^2"
 pytz = "*"
 rich = "*"
-einops = "^0.7.0"
-fastapi = {extras = ["all"], version = "^0.105.0", optional = true}
-huggingface-hub = {extras = ["cli", "torch"], version = "^0.19.4"}
-nvgpu = "^0.10.0"
-protobuf = "^4.25.1"
-python-dotenv = "^1.0.0"
-sentencepiece = "^0.1.99"
-torch-model-archiver = "^0.9.0"
-torch-workflow-archiver = "^0.2.11"
-torchserve = "^0.9.0"
-transformers = {extras = ["torch"], version = "^4.35.2"}
+typing-extensions = "^4.7.0"
+einops = { version = "^0.7.0", optional = true }
+fastapi = { extras = ["all"], version = "^0.105.0", optional = true }
+huggingface-hub = { extras = ["cli"], version = "^0.19.4", optional = true }
+nvgpu = { version = "^0.10.0", optional = true }
+protobuf = { version = "^4.25.1", optional = true }
+python-dotenv = { version = "^1.0.0", optional = true }
+sentencepiece = { version = "^0.1.99", optional = true }
+torch-model-archiver = { version = "^0.9.0", optional = true }
+torch-workflow-archiver = { version = "^0.2.11", optional = true }
+torchserve = { version = "^0.9.0", optional = true }
+transformers = { extras = ["torch"], version = "^4.35.2", optional = true }
 
+[tool.poetry.extras]
+all = [
+    "einops",
+    "fastapi",
+    "huggingface-hub",
+    "nvgpu",
+    "protobuf",
+    "python-dotenv",
+    "sentencepiece",
+    "torch-model-archiver",
+    "torch-workflow-archiver",
+    "torchserve",
+    "transformers",
+]
+ts = [
+    "einops",
+    "huggingface-hub",
+    "nvgpu",
+    "protobuf",
+    "python-dotenv",
+    "sentencepiece",
+    "torch-model-archiver",
+    "torch-workflow-archiver",
+    "torchserve",
+    "transformers",
+]
+fastapi = ["fastapi", "python-dotenv"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
