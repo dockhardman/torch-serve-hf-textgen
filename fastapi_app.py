@@ -10,7 +10,20 @@ from yarl import URL
 
 class Settings(BaseSettings):
     app_name: str = "TorchServeLlmChat"
-    host_ts_service: Text = "http://127.0.0.1:8085"
+    host_ts_inference_service: Text = "http://127.0.0.1:8085"
+    host_ts_management_service: Text = "http://127.0.0.1:8086"
+
+
+class ModelsResponse(BaseModel):
+    models: List["ModelMeta"]
+
+
+class ModelMeta(BaseModel):
+    modelName: Text
+    modelUrl: Text
+
+
+ModelsResponse.model_rebuild()
 
 
 class ChatMessage(BaseModel):
@@ -39,8 +52,15 @@ def create_app():
 
     @app.get("/api/v1/llm/health")
     async def llm_health():
-        url = URL(app_settings.host_ts_service).with_path("ping")
-        print(url)
+        url = URL(app_settings.host_ts_inference_service).with_path("ping")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+
+    @app.get("/api/v1/llm/models", response_model=ModelsResponse)
+    async def llm_models():
+        url = URL(app_settings.host_ts_management_service).with_path("models")
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 resp.raise_for_status()
