@@ -1,11 +1,17 @@
+import logging
 import uuid
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List, Optional, Text, Union
 
 import aiohttp
-from fastapi import FastAPI, HTTPException
+import pyjson5
+from fastapi import Body, FastAPI, HTTPException
+from fastapi import Path as PathParam
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
+from typing_extensions import Literal
 from yarl import URL
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -50,19 +56,44 @@ ModelsResponse.model_rebuild()
 
 
 class ChatMessage(BaseModel):
-    role: Text
+    role: Literal["user", "assistant"]
     content: Text
 
 
 class ChatCall(BaseModel):
     sender: Text = Field(default_factory=lambda: str(uuid.uuid4()))
-    system: Text
+    system: Text = Field("")
     messages: List[ChatMessage]
     metadata: Dict[Text, Any] = Field(default_factory=dict)
 
+    def to_prompt(self, model_name: Optional[Text] = None) -> Text:
+        return self.to_system_prompt(model_name) + self.to_messages_prompt(model_name)
+
+    def to_system_prompt(self, model_name: Optional[Text] = None) -> Text:
+        sys_content = self.system.strip()
+        if not sys_content:
+            return ""
+        sys_prompt_template = "<s>[INST] <<SYS>> {system_content} <</SYS>> [/INST]"
+        return sys_prompt_template.format(system_content=sys_content)
+
+    def to_messages_prompt(self, model_name: Optional[Text] = None) -> Text:
+        msg_prompt = ""
+        msg_prompt_template = "<s>[INST] {user_content} [/INST] {assistant_content}"
+        for m in self.messages:
+            if m.role == "user":
+                msg_prompt += msg_prompt_template.format(
+                    user_content=m.content.strip(), assistant_content=""
+                )
+            elif m.role == "assistant":
+                msg_prompt += m.content.strip()
+            else:
+                logger.warning(f"Unknown role '{m.role}'")
+        return msg_prompt
+
 
 class ChatResponse(BaseModel):
-    pass
+    recipient: Text
+    messages: List[ChatMessage]
 
 
 def create_app():
@@ -108,9 +139,32 @@ def create_app():
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=str(e))
 
-    @app.post("/api/v1/llm/{model_name}/chat")
-    async def llm_chat():
-        return {"Hello": "World"}
+    @app.post("/api/v1/llm/predictions/{model_name}/chat")
+    async def llm_chat(
+        model_name: Text = PathParam(..., description="Model name"),
+        chat_call: ChatCall = Body(..., description="Chat call"),
+    ):
+        chat_prompt = chat_call.to_prompt(model_name)
+        url = URL(app_settings.host_ts_inference_service).with_path(
+            f"predictions/{model_name}"
+        )
+        data = [{"text": chat_prompt}]
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as resp:
+                try:
+                    resp.raise_for_status()
+                    data = await resp.text()
+                    return pyjson5.decode(data)
+                except aiohttp.ClientResponseError as e:
+                    logger.exception(e)
+                    if resp.status == 404:
+                        raise HTTPException(
+                            status_code=404, detail=f"Model '{model_name}' not found"
+                        )
+                    raise HTTPException(status_code=500, detail=str(e))
+                except Exception as e:
+                    logger.exception(e)
+                    raise HTTPException(status_code=500, detail=str(e))
 
     return app
 
