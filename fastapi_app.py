@@ -6,6 +6,7 @@ import aiohttp
 import pyjson5
 from fastapi import Body, FastAPI, HTTPException
 from fastapi import Path as PathParam
+from fastapi import Query
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 from typing_extensions import Literal
@@ -92,8 +93,12 @@ class ChatCall(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    recipient: Text
+    recipient_id: Text
     messages: List[ChatMessage]
+
+
+class TransformersPipelineResponse(BaseModel):
+    generated_text: Text
 
 
 def create_app():
@@ -139,9 +144,10 @@ def create_app():
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=str(e))
 
-    @app.post("/api/v1/llm/predictions/{model_name}/chat")
+    @app.post("/api/v1/llm/predictions/{model_name}/chat", response_model=ChatResponse)
     async def llm_chat(
         model_name: Text = PathParam(..., description="Model name"),
+        recipient_id: Text = Query(..., default_factory=lambda: str(uuid.uuid4())),
         chat_call: ChatCall = Body(..., description="Chat call"),
     ):
         chat_prompt = chat_call.to_prompt(model_name)
@@ -153,8 +159,24 @@ def create_app():
             async with session.post(url, json=data) as resp:
                 try:
                     resp.raise_for_status()
-                    data = await resp.text()
-                    return pyjson5.decode(data)
+                    pipe_res = TransformersPipelineResponse.model_validate(
+                        pyjson5.decode(await resp.text())
+                    )
+                    if not pipe_res.generated_text:
+                        raise HTTPException(
+                            status_code=500, detail="Generated text is empty"
+                        )
+                    pipe_res.generated_text = pipe_res.generated_text.replace(
+                        chat_prompt, "", 1
+                    ).strip()
+                    return ChatResponse(
+                        recipient_id=recipient_id,
+                        messages=[
+                            ChatMessage(
+                                role="assistant", content=pipe_res.generated_text
+                            )
+                        ],
+                    )
                 except aiohttp.ClientResponseError as e:
                     logger.exception(e)
                     if resp.status == 404:
@@ -162,6 +184,9 @@ def create_app():
                             status_code=404, detail=f"Model '{model_name}' not found"
                         )
                     raise HTTPException(status_code=500, detail=str(e))
+                except HTTPException as e:
+                    logger.exception(e)
+                    raise e
                 except Exception as e:
                     logger.exception(e)
                     raise HTTPException(status_code=500, detail=str(e))
