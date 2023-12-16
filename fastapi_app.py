@@ -1,10 +1,11 @@
 import logging
+import time
 import uuid
 from typing import Any, Dict, List, Optional, Text, Union
 
 import aiohttp
 import pyjson5
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi import Path as PathParam
 from fastapi import Query
 from pydantic import BaseModel, Field
@@ -95,6 +96,9 @@ class ChatCall(BaseModel):
 class ChatResponse(BaseModel):
     recipient_id: Text
     messages: List[ChatMessage]
+    start_time: Optional[float] = None
+    end_time: Optional[float] = None
+    timecost: Optional[float] = None
 
 
 class TransformersPipelineResponse(BaseModel):
@@ -149,6 +153,7 @@ def create_app():
         model_name: Text = PathParam(..., description="Model name"),
         recipient_id: Text = Query(..., default_factory=lambda: str(uuid.uuid4())),
         chat_call: ChatCall = Body(..., description="Chat call"),
+        start_time: float = Depends(lambda: time.time()),
     ):
         chat_prompt = chat_call.to_prompt(model_name)
         url = URL(app_settings.host_ts_inference_service).with_path(
@@ -169,14 +174,19 @@ def create_app():
                     pipe_res.generated_text = pipe_res.generated_text.replace(
                         chat_prompt, "", 1
                     ).strip()
-                    return ChatResponse(
+
+                    chat_res = ChatResponse(
                         recipient_id=recipient_id,
                         messages=[
                             ChatMessage(
                                 role="assistant", content=pipe_res.generated_text
                             )
                         ],
+                        start_time=start_time,
+                        end_time=time.time(),
                     )
+                    chat_res.timecost = chat_res.end_time - chat_res.start_time
+                    return chat_res
                 except aiohttp.ClientResponseError as e:
                     logger.exception(e)
                     if resp.status == 404:
