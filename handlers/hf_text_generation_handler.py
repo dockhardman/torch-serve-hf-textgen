@@ -41,7 +41,7 @@ class TransformersHandler(BaseHandler):
         self.pipeline: "TextGenerationPipeline" = transformers.pipeline(
             "text-generation",
             model=model_dir,
-            torch_dtype=torch.float16,
+            # torch_dtype=torch.float16,
             device_map=self.device,
         )
         self.model = self.pipeline.model

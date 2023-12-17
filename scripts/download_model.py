@@ -1,9 +1,12 @@
-import torch
+import os
+
 import transformers
 from transformers import AutoTokenizer
 from transformers.pipelines.text_generation import TextGenerationPipeline
 
-model = "meta-llama/Llama-2-7b-chat-hf"
+model = os.environ.get("MODEL_SRC_NAME", None)
+if model is None:
+    raise ValueError("MODEL_SRC_NAME environment variable not set.")
 
 
 # Save the model
@@ -15,7 +18,6 @@ def main():
     pipeline: "TextGenerationPipeline" = transformers.pipeline(
         "text-generation",
         model=model,
-        torch_dtype=torch.float16,
         device_map="auto",
     )
     pipeline.model.save_pretrained(save_path)

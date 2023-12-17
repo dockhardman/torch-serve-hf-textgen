@@ -1,19 +1,28 @@
-MODEL_DIR := models/meta-llama/Llama-2-7b-chat-hf
+MODEL_NAME := llama2-7b-chat
+MODEL_SRC_NAME := TheBloke/Llama-2-7b-Chat-GPTQ
+MODEL_DIR := models/TheBloke/Llama-2-7b-Chat-GPTQ
+MODEL_EXTRA_FILES := $(shell find $(MODEL_DIR) -type f | paste -sd, -)
+
+PYTHONPATH ?= $(CURDIR)
+
+
+download-model:
+	PYTHONPATH=$(PYTHONPATH) python scripts/download_model.py
 
 archive-model:
 	torch-model-archiver \
-		--model-name meta-llama--Llama-2-7b-chat-hf \
+		--model-name $(MODEL_NAME) \
 		--version 1.0 \
-		--serialized-file $(MODEL_DIR)/model.safetensors.index.json \
+		--serialized-file $(MODEL_DIR)/model.safetensors \
 		--export-path model_store \
 		--handler handlers/hf_text_generation_handler.py \
-		--extra-files models/meta-llama/Llama-2-7b-chat-hf/config.json,models/meta-llama/Llama-2-7b-chat-hf/generation_config.json,models/meta-llama/Llama-2-7b-chat-hf/model-00001-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model-00002-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model-00003-of-00003.safetensors,models/meta-llama/Llama-2-7b-chat-hf/model.safetensors.index.json,models/meta-llama/Llama-2-7b-chat-hf/special_tokens_map.json,models/meta-llama/Llama-2-7b-chat-hf/tokenizer.json,models/meta-llama/Llama-2-7b-chat-hf/tokenizer.model,models/meta-llama/Llama-2-7b-chat-hf/tokenizer_config.json
+		--extra-files $(MODEL_EXTRA_FILES)
 
 start-torchserve:
 	torchserve --start \
 		--ncs \
 		--model-store model_store \
-		--models meta-llama--Llama-2-7b-chat-hf=meta-llama--Llama-2-7b-chat-hf.mar \
+		--models $(MODEL_NAME)=$(MODEL_NAME).mar \
 		--ts-config config/config.properties
 
 stop-torchserve:
