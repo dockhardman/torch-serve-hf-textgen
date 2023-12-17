@@ -39,10 +39,10 @@ start-fastapi-dev:
 		--reload-delay=5.0
 
 start-fastapi:
-	uvicorn fastapi_app:app \
+	nohup uvicorn fastapi_app:app \
 		--host=0.0.0.0 \
-		--port=80 \
-		--workers=2
+		--port=8087 \
+		--workers=2 &
 
 format-all:
 	isort .
