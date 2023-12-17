@@ -24,7 +24,7 @@ def is_running_in_docker():
         with open("/proc/self/cgroup", "r") as file:
             if "docker" in file.read():
                 return True
-    except Exception as e:
+    except Exception:
         pass
 
     return False
