@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 import uuid
 from typing import Any, Dict, List, Optional, Text, Union
@@ -16,10 +17,31 @@ from yarl import URL
 logger = logging.getLogger(__name__)
 
 
+def is_running_in_docker():
+    if os.path.exists("/.dockerenv"):
+        return True
+    try:
+        with open("/proc/self/cgroup", "r") as file:
+            if "docker" in file.read():
+                return True
+    except Exception as e:
+        pass
+
+    return False
+
+
 class Settings(BaseSettings):
     app_name: str = "TorchServeLlmChat"
-    host_ts_inference_service: Text = "http://127.0.0.1:8085"
-    host_ts_management_service: Text = "http://127.0.0.1:8086"
+    host_ts_inference_service: Text = (
+        "http://text-gen-ts-server:8085"
+        if is_running_in_docker()
+        else "http://0.0.0.0:8085"
+    )
+    host_ts_management_service: Text = (
+        "http://text-gen-ts-server:8086"
+        if is_running_in_docker()
+        else "http://0.0.0.0:8086"
+    )
 
 
 class ModelsResponse(BaseModel):

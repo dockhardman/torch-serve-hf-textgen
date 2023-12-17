@@ -2,6 +2,8 @@ version: '3'
 
 services:
   text-gen-ts-server:
+    container_name: text-gen-ts-server
+    image: text-gen-ts:${IMAGE_VERSION:-latest}
     build:
       context: .
       dockerfile: dockerfile.ts
@@ -22,6 +24,19 @@ services:
           - driver: nvidia
             count: 1
             capabilities: [gpu]
+
+  text-gen-api-server:
+    container_name: text-gen-api-server
+    image: text-gen-api:${IMAGE_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: dockerfile.app
+    ports:
+      - "8087:8087"
+    volumes:
+      - ./fastapi_app.py:/app/fastapi_app.py
+    networks:
+      - text-gen
 
 networks:
   text-gen:
