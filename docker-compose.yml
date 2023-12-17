@@ -10,11 +10,18 @@ services:
     ports:
       - "8085:8085"
       - "8086:8086"
-    # volumes:
-    #   - ./model_store:/home/model-server/model_store
-    #   - ./config:/home/model-server/config
+    volumes:
+      - ./model_store:/home/model-server/model_store
+      - ./config:/home/model-server/config
     networks:
       - text-gen
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
 
 networks:
   text-gen:

@@ -1,0 +1,17 @@
+pydantic
+pytz
+rich
+typing-extensions
+pyjson5
+auto-gptq
+einops
+huggingface-hub
+nvgpu
+optimum
+protobuf
+python-dotenv
+sentencepiece
+torch-model-archiver
+torch-workflow-archiver
+torchserve
+transformers
