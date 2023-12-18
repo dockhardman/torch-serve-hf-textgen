@@ -7,7 +7,7 @@ PYTHONPATH ?= $(CURDIR)
 
 
 download-model:
-	PYTHONPATH=$(PYTHONPATH) python scripts/download_model.py
+	MODEL_SRC_NAME=$(MODEL_SRC_NAME) PYTHONPATH=$(PYTHONPATH) python scripts/download_model.py
 
 archive-model:
 	torch-model-archiver \
