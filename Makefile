@@ -1,6 +1,6 @@
 MODEL_NAME := llama2-7b-chat
-MODEL_SRC_NAME := TheBloke/Llama-2-7b-Chat-GPTQ
-MODEL_DIR := models/TheBloke/Llama-2-7b-Chat-GPTQ
+MODEL_SRC_NAME := TheBloke/Llama-2-7B-Chat-AWQ
+MODEL_DIR := models/TheBloke/Llama-2-7B-Chat-AWQ
 MODEL_EXTRA_FILES := $(shell find $(MODEL_DIR) -type f | paste -sd, -)
 
 PYTHONPATH ?= $(CURDIR)
