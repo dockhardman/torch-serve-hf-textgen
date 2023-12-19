@@ -2,9 +2,7 @@ import logging
 from typing import Dict, List, Text, TypedDict, Union
 
 import torch
-import transformers
-from transformers import AutoTokenizer
-from transformers.pipelines import TextGenerationPipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from ts.torch_handler.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -32,19 +30,16 @@ class TransformersHandler(BaseHandler):
         """
         Initialize the model. This will be called during model loading.
         """
+
         properties = context.system_properties
         model_dir = properties.get("model_dir")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load model
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.pipeline: "TextGenerationPipeline" = transformers.pipeline(
-            "text-generation",
-            model=model_dir,
-            # torch_dtype=torch.float16,
-            device_map=self.device,
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_dir, device_map="auto", trust_remote_code=False
         )
-        self.model = self.pipeline.model
 
         self.initialized = True
 
@@ -52,6 +47,7 @@ class TransformersHandler(BaseHandler):
         """
         Preprocessing input request. This prepares the input text.
         """
+
         if not data:
             return []
         request_body = data[0].get("data") or data[0].get("body")
@@ -72,26 +68,29 @@ class TransformersHandler(BaseHandler):
         """
         Generate text using the model pipeline.
         """
+
         if not inputs:
             return []
-        if isinstance(inputs, Text):
-            inputs = [inputs]
-        print(f"Inputs: {inputs}")
-        results = self.pipeline(
-            inputs,
+        prompt = inputs if isinstance(inputs, Text) else inputs[0]
+        print(f"Inputs: {prompt}")
+
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+        output = self.model.generate(
+            inputs=input_ids,
+            temperature=0.7,
             do_sample=True,
-            num_return_sequences=1,
-            eos_token_id=self.tokenizer.eos_token_id,
-            max_length=4096,
-            top_p=0.9,
-            top_k=50,
-            repetition_penalty=1.2,
+            top_p=0.95,
+            top_k=40,
+            max_new_tokens=2048,
         )
-        print(f"Results: {results}")
-        return [result[0] for result in results]
+        generated_text = self.tokenizer.decode(output[0], skip_special_tokens=True)
+
+        print(f"Generated text: {generated_text}")
+        return [{"generated_text": generated_text}]
 
     def postprocess(self, inference_output):
         """
         Post processing of the inference output
         """
+
         return inference_output
