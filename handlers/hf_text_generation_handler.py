@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List, Text, TypedDict, Union
 
 import torch
+from torch import Tensor
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from ts.torch_handler.base_handler import BaseHandler
 
@@ -74,8 +75,9 @@ class TransformersHandler(BaseHandler):
         prompt = inputs if isinstance(inputs, Text) else inputs[0]
         print(f"Inputs: {prompt}")
 
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
-        output = self.model.generate(
+        input_ids: "Tensor" = self.tokenizer(prompt, return_tensors="pt").input_ids
+        input_ids = input_ids.to(self.device)
+        output: "Tensor" = self.model.generate(
             inputs=input_ids,
             temperature=0.7,
             do_sample=True,
@@ -83,6 +85,9 @@ class TransformersHandler(BaseHandler):
             top_k=40,
             max_new_tokens=2048,
         )
+        input_ids = input_ids.to("cpu")
+        output = output.to("cpu")
+
         generated_text = self.tokenizer.decode(output[0], skip_special_tokens=True)
 
         print(f"Generated text: {generated_text}")
